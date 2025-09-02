@@ -1,0 +1,22 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "jsx": "react-native", // ✅ Enables JSX for React Native
+    "allowJs": true, // ✅ If you're mixing JS and TS
+    "esModuleInterop": true, // ✅ Needed for clean imports
+    "strict": false, // Optional: relax type checking during setup
+    "skipLibCheck": true,
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts",
+    "env.d.ts"
+  ],
+  "exclude": ["node_modules", "**/__tests__/*", "**/__mocks__/*"]
+}
