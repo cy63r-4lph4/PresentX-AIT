@@ -7,7 +7,7 @@ import CryptoJS from "crypto-js";
 import { SECRET_KEY } from "@env";
 
 interface CameraScannerProps {
-  onScanned: (result: { data: string }) => void;
+  onScanned: (result: { token: string }) => void;
 }
 
 export default function CameraScanner({ onScanned }: CameraScannerProps) {
@@ -24,13 +24,20 @@ export default function CameraScanner({ onScanned }: CameraScannerProps) {
   }, []);
 
   const handleBarCodeScanned = (result: BarcodeScanningResult) => {
-    if (!scanned) {
+  if (!scanned) {
+    try {
+      const decoded = decodeURIComponent(result.data);
+      const bytes = CryptoJS.AES.decrypt(decoded, secretKey);
+      const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+      const decryptedData = JSON.parse(decrypted);
+      onScanned({ token: decryptedData.token });
       setScanned(true);
-      const bytes = CryptoJS.AES.decrypt(result.data, secretKey);
-      const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
-      onScanned({ data: decryptedData.token });
+    } catch (error) {
+      console.error("Error decrypting QR code:", error);
     }
-  };
+  }
+};
+
 
   if (hasPermission === null) {
     return (

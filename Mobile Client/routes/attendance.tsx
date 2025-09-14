@@ -23,6 +23,22 @@ const Attendance = () => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
+  const getCardClass = (color) => {
+  switch (color) {
+    case "card-c1":
+      return "bg-card-c1 border-card-c1b";
+    case "card-c2":
+      return "bg-card-c2 border-card-c2b";
+    case "card-c3":
+      return "bg-card-c3 border-card-c3b";
+    case "card-c4":
+      return "bg-card-c4 border-card-c4b";
+    default:
+      return "";
+  }
+};
+
+
   return (
     <>
       <StatusBar

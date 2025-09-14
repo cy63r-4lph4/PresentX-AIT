@@ -1,8 +1,8 @@
 import api from "@/lib/axios";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-const markAttendance = async (eventId: string): Promise<void> => {
-  await api.post(`/attendance/mark`, { eventId });
+const markAttendance = async (token: string): Promise<void> => {
+  await api.post(`/attendance/mark`, { token });
 };
 
 export const useMarkAttendance = () => {
@@ -10,9 +10,8 @@ export const useMarkAttendance = () => {
 
   return useMutation({
     mutationFn: markAttendance,
-    onSuccess: (_, eventId) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["todays-events"] });
     },
-    // No onError — let caller handle it
   });
 };

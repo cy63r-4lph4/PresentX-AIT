@@ -22,7 +22,8 @@ export default function EventCard({ event, index }) {
       key={event.id}
       className={`flex-row justify-between p-5 rounded-2xl border mb-4 ${bgClass}`}
     >
-      <View className="flex-1 pr-4 gap-4"> 
+      {/* Left side */}
+      <View className="flex-1 pr-4 gap-4">
         <View className="max-w-full">
           <Text
             className="text-xl font-bold"
@@ -56,19 +57,33 @@ export default function EventCard({ event, index }) {
         </View>
       </View>
 
+      {/* Right side */}
       <View className="items-end justify-between">
         <View
           className={`w-[44px] h-[44px] justify-center items-center rounded-full ${iconBgClass}`}
         >
           <CalendarDaysIcon size={24} color={"#fff"} />
         </View>
-        <Text
-          className="text-gray-500 text-right text-sm"
-          numberOfLines={1}
-          ellipsizeMode="tail"
-        >
-          {event.start_time} - {event.end_time}
-        </Text>
+
+        <View className="items-end mt-2">
+          <Text
+            className="text-gray-500 text-right text-sm"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {event.start_time} - {event.end_time}
+          </Text>
+
+          {event.marked ? (
+            <Text style={{ color: "#16a34a" }} className="text-green-600 font-semibold text-xs mt-1">
+              ✔ Marked
+            </Text>
+          ) : (
+            <Text className="text-red-500 font-semibold text-xs mt-1">
+              Not Marked
+            </Text>
+          )}
+        </View>
       </View>
     </View>
   );

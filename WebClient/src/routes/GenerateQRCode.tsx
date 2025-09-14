@@ -92,10 +92,14 @@ export default function GenerateQRCode() {
         onSuccess: (data) => {
           const rawData = JSON.stringify({ token: data.token });
           const encrypted = CryptoJS.AES.encrypt(rawData, secretKey).toString();
-          setQrData(encrypted);
+
+          const safeEncrypted = encodeURIComponent(encrypted);
+
+          setQrData(safeEncrypted);
           setExpiresAt(new Date(data.expires_at));
           setSmsCode(data.sms_code);
           setHasFetchedToken(true);
+
           toast.success(
             `${
               data.reused ? "Reused" : "Generated"
@@ -117,7 +121,12 @@ export default function GenerateQRCode() {
 
     if (eventToken?.token) {
       const expiryDate = new Date(eventToken.expires_at);
-      setQrData(JSON.stringify({ token: eventToken.token }));
+
+      const rawData = JSON.stringify({ token: eventToken.token });
+      const encrypted = CryptoJS.AES.encrypt(rawData, secretKey).toString();
+      const safeEncrypted = encodeURIComponent(encrypted);
+
+      setQrData(safeEncrypted);
       setExpiresAt(expiryDate);
       setSmsCode(eventToken.sms_code || "");
     } else {

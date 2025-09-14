@@ -5,16 +5,45 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\AttendanceToken;
 use App\Models\CourseRegistration;
+use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Carbon;
 
 class AttendanceController extends Controller
 {
+
+    public function index($eventId)
+    {
+        $registered = CourseRegistration::where('event_id', $eventId)->count();
+
+        $attendances = Attendance::with('student')
+            ->where('event_id', $eventId)
+            ->get()
+            ->map(function ($a) {
+                return [
+                    'id' => $a->id,
+                    'name' => $a->student->name,
+                    'student_id' => $a->student->student_id,
+                    'stream' => $a->student->stream,
+                    'method' => $a->method,
+                    'time' => $a->marked_at->format('h:i A'),
+
+                ];
+            });
+
+        return response()->json([
+            'students' => $attendances,
+            'registered' => $registered,
+        ]);
+    }
+
+
     public function mark(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'student_id' => 'required|exists:students,id',
+            'student_id' => 'required|exists:students,student_id',
             'token' => 'required|string',
             'method' => 'nullable|in:qr,sms,manual',
         ]);
@@ -35,6 +64,11 @@ class AttendanceController extends Controller
                 'message' => 'Invalid or inactive attendance token.'
             ], 404);
         }
+        Log::info('Marking attendance', [
+            'student_id' => $request->student_id,
+            'event_id_from_token' => $token->event_id,
+        ]);
+
 
         $now = Carbon::now();
         if ($now->lt($token->starts_at) || $now->gt($token->expires_at)) {
@@ -43,7 +77,6 @@ class AttendanceController extends Controller
             ], 403);
         }
 
-        // Check if attendance was already marked
         $alreadyMarked = Attendance::where('student_id', $request->student_id)
             ->where('event_id', $token->event_id)
             ->exists();
@@ -54,9 +87,8 @@ class AttendanceController extends Controller
             ], 409);
         }
 
-        // Check if student is registered for the course/event
         $isRegistered = CourseRegistration::where('student_id', $request->student_id)
-            ->where('course_id', $token->event->course_id ?? null)
+            ->where('course_code', $token->event->course_id ?? null)
             ->exists();
 
         $attendance = Attendance::create([
@@ -74,18 +106,23 @@ class AttendanceController extends Controller
     }
 
     public function markAuthenticated(Request $request)
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    if (!$user || $user->role !== 'student') {
-        return response()->json([
-            'message' => 'Unauthorized. Only students can mark attendance this way.'
-        ], 403);
+
+        if (!$user instanceof Student) {
+            return response()->json([
+                'message' => 'Unauthorized. Only students can mark attendance this way.'
+            ], 403);
+        }
+
+        $request->merge([
+            'student_id' => $user->student_id,
+            'method' => 'qr'
+        ]);
+
+        return $this->mark($request);
     }
 
-    $request->merge(['student_id' => $user->id]);
-
-    return $this->mark($request);
-}
 
 }

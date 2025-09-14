@@ -1,0 +1,87 @@
+# Root-level .gitignore for monorepo
+
+# === Backend (Laravel) ===
+/Backend/vendor/
+/Backend/node_modules/
+/Backend/.env
+/Backend/storage/
+/Backend/bootstrap/cache/
+/Backend/.phpunit.result.cache
+/Backend/.idea/
+/Backend/.vscode/
+/Backend/.env.*.backup
+/Backend/.phpstorm.meta.php
+/Backend/homestead.yaml
+/Backend/homestead.json
+/Backend/.phpunit.result.cache
+
+# Composer files
+/Backend/composer.lock
+/Backend/composer.phar
+
+# Laravel Mix
+/Backend/public/mix-manifest.json
+/Backend/public/hot
+
+# === Webclient (React + Vite) ===
+/WebClient/node_modules/
+/WebClient/dist/
+/WebClient/.env
+/WebClient/.vite/
+/WebClient/build/
+/WebClient/.cache/
+/WebClient/.turbo/
+/WebClient/.parcel-cache/
+/WebClient/.pnp.*
+/WebClient/.eslintcache
+/WebClient/yarn-error.log
+/WebClient/package-lock.json
+/WebClient/yarn.lock
+
+# VSCode settings
+/WebClient/.vscode/
+/WebClient/.idea/
+
+# Logs
+/WebClient/npm-debug.log*
+/WebClient/yarn-debug.log*
+/WebClient/yarn-error.log*
+
+# === Mobile Client (Expo + React Native) ===
+/Mobile Client/node_modules/
+/Mobile Client/.expo/
+/Mobile Client/.expo-shared/
+/Mobile Client/dist/
+/Mobile Client/android/
+/Mobile Client/ios/
+/Mobile Client/.vscode/
+/Mobile Client/.idea/
+/Mobile Client/.env
+/Mobile Client/npm-debug.log*
+/Mobile Client/yarn-error.log*
+/Mobile Client/package-lock.json
+/Mobile Client/yarn.lock
+/Mobile Client/expo-app-assets/
+
+# Expo build files
+/Mobile Client/.expo/
+/Mobile Client/expo-build-cache/
+
+# React Native Metro Bundler cache
+/Mobile Client/.metro-cache/
+/Mobile Client/.watchmanconfig
+
+# Logs
+/Mobile Client/debug.log
+
+# === Common ===
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.local
+.env.*.local
+
+# Ignore .git directories inside subfolders if any remain
+**/.git/
+

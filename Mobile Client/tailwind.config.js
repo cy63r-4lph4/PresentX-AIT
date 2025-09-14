@@ -2,6 +2,10 @@
 module.exports = {
   content: ["./app/**/*.{js,jsx,ts,tsx}"],
   presets: [require("nativewind/preset")],
+    safelist: [
+    "bg-card-c1", "bg-card-c2", "bg-card-c3", "bg-card-c4",
+    "border-card-c1b", "border-card-c2b", "border-card-c3b", "border-card-c4b",
+  ],
   theme: {
     extend: {
       colors: {
@@ -11,6 +15,9 @@ module.exports = {
           shadow: "rgba(97, 31, 231, 0.5)", // ✅ String format
           DEFAULT: "rgba(97, 31, 231, 1)", 
         // ✅ String format
+        },
+        green: {
+          600: "#16a34a", // Tailwind's green-600 hex
         },
         dot:"rgba(59, 19, 139, 1)",
         card: {

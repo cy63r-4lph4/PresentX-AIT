@@ -12,8 +12,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Bell, Volume2 } from "lucide-react-native";
 import { router } from "expo-router";
 
+
 export default function Index() {
   const { width } = useWindowDimensions();
+
+ 
 
   const Style = StyleSheet.create({
     shadow: {
@@ -93,47 +96,50 @@ export default function Index() {
                 className="text-primary text-sm"
                 style={{ flexWrap: "wrap" }}
               >
-                Attendance officers will be coming round in the next 30mins to take attendance
+                Attendance officers will be coming round in the next 30mins to
+                take attendance
               </Text>
             </View>
           </View>
 
           {/* Action Cards */}
           <View className="flex-row flex-wrap justify-between">
-            {([
-              {
-                title: "Student Attendance",
-                subtitle: "Track all your attendance",
-                img: require("../../assets/images/attendance_marking.png"),
-                path: "/routes/attendance",
-                color: "card-c1",
-                border: "card-c1b",
-              },
-              {
-                title: "Courses",
-                subtitle: "View registered courses",
-                img: require("../../assets/images/courses.png"),
-                path: "/routes/courses",
-                color: "card-c2",
-                border: "card-c2b",
-              },
-              {
-                title: "Student ID",
-                subtitle: "View your student ID",
-                img: require("../../assets/images/idcard.png"),
-                path: "/routes/idcard",
-                color: "card-c3",
-                border: "card-c3b",
-              },
-              {
-                title: "Personal Information",
-                subtitle: "View personal information",
-                img: require("../../assets/images/personal_info.png"),
-                path: "/routes/personalInfo",
-                color: "card-c4",
-                border: "card-c4b",
-              },
-            ] as const).map((item, idx) => (
+            {(
+              [
+                {
+                  title: "Student Attendance",
+                  subtitle: "Track all your attendance",
+                  img: require("../../assets/images/attendance_marking.png"),
+                  path: "/routes/attendance",
+                  color: "card-c1",
+                  border: "card-c1b",
+                },
+                {
+                  title: "Courses",
+                  subtitle: "View registered courses",
+                  img: require("../../assets/images/courses.png"),
+                  path: "/routes/courses",
+                  color: "card-c2",
+                  border: "card-c2b",
+                },
+                {
+                  title: "Student ID",
+                  subtitle: "View your student ID",
+                  img: require("../../assets/images/idcard.png"),
+                  path: "/routes/idcard",
+                  color: "card-c3",
+                  border: "card-c3b",
+                },
+                {
+                  title: "Personal Information",
+                  subtitle: "View personal information",
+                  img: require("../../assets/images/personal_info.png"),
+                  path: "/routes/personalInfo",
+                  color: "card-c4",
+                  border: "card-c4b",
+                },
+              ] as const
+            ).map((item, idx) => (
               <TouchableOpacity
                 key={idx}
                 className={`bg-${item.color} border-${item.border} rounded-[20.27] w-[48%] mb-4 p-4 border`}

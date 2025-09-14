@@ -14,9 +14,7 @@ import { router, useNavigation } from "expo-router";
 import { Calendar } from "react-native-calendars";
 import { useTodaysEvents } from "@/hooks/TodayCourse";
 import WithLoveSVG from "../../assets/icons/withLove.svg";
-import { Event } from "@/components/Interfaces";
 import QRScannerModal from "@/components/ScannerModal";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import EventCard from "@/components/EventCard";
 
 const Attendance = () => {
@@ -30,11 +28,12 @@ const Attendance = () => {
   }, [navigation]);
 
   const handleCardPress = (event) => {
+    if (event.marked) {
+      return;
+    }
     setSelectedEvent(event);
     setScannerVisible(true);
   };
-
- 
 
   return (
     <>

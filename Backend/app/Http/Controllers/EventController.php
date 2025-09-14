@@ -82,12 +82,10 @@ class EventController extends Controller
         }
         $validated['streams'] = $streamIds;
 
-        // Normalize hall
 
 
-        // Check for time conflict in hall
-        $start = \Carbon\Carbon::createFromFormat('H:i', $validated['start_time']);
-        $end = \Carbon\Carbon::createFromFormat('H:i', $validated['end_time']);
+        $start = Carbon::createFromFormat('H:i', $validated['start_time']);
+        $end =Carbon::createFromFormat('H:i', $validated['end_time']);
 
         $conflict = Event::where('date', $validated['date'])
             ->where('hall_id', $validated['hall_id'])
@@ -231,19 +229,19 @@ class EventController extends Controller
             return response()->json([]);
         }
 
-        $events = Event::with('academicYear') // make sure we eager load related model
+        $events = Event::with('academicYear')
             ->where('academic_year_id', $currentSemesterId)
             ->where(function ($query) use ($courses) {
                 foreach ($courses as $course) {
                     $query->orWhere(function ($subQuery) use ($course) {
-                        $subQuery->where('title', $course->code)
-                            ->whereJsonContains('streams', (int) $course->stream_id);
+                        $subQuery->where('title', $course->code);
+                        
                     });
                 }
             })
             ->get();
 
-        // ✅ return the collection using resource
+
         return EventResource::collection($events)->resolve();
     }
 
@@ -306,6 +304,10 @@ class EventController extends Controller
             'starts_at' => $autoExpiry ? $event->start_time : now(),
             'expires_at' => $autoExpiry ? $event->end_time : now()->addMinutes($expiryMinutes),
             'is_active' => true,
+        ]);
+        Log::info('Generating token', [
+            'eventId_from_request' => $eventId,
+            'eventId_from_event' => $event->id,
         ]);
 
         return response()->json([
@@ -402,12 +404,13 @@ class EventController extends Controller
 
 
 
+
     public function getTodaysEventsForStudent(Request $request)
     {
         $studentId = $request->user()->student_id ?? $request->student_id;
         $today = Carbon::today();
         $todayDate = $today->toDateString();
-        $dayOfWeek = $today->format('l'); // 'Monday', etc.
+        $dayOfWeek = $today->format('l');
 
         // Recurring Events
         $recurringEvents = DB::table('course_registrations')
@@ -430,8 +433,7 @@ class EventController extends Controller
                 'events.end_time',
                 'halls.name as hall'
             )
-            ->distinct(); // ✅ Eliminate duplicate rows
-
+            ->distinct();
 
         // One-Time Events
         $oneTimeEvents = DB::table('course_registrations')
@@ -454,15 +456,32 @@ class EventController extends Controller
                 'events.end_time',
                 'halls.name as hall'
             )
-            ->distinct(); // ✅ Eliminate duplicate rows
+            ->distinct();
 
-        // Combine both
+        // Combine into one result set
         $events = $recurringEvents->unionAll($oneTimeEvents)->get();
+
+        $attendedEventIds = DB::table('attendance')
+            ->where('student_id', $studentId)
+            ->pluck('event_id')
+            ->toArray();
+
+        // Mark attended events
+        $events->transform(function ($event) use ($attendedEventIds) {
+            $event->marked = in_array($event->id, $attendedEventIds);
+            return $event;
+        });
+
+
 
         return response()->json([
             'events' => $events
         ]);
     }
+
+
+
+
 
 
 

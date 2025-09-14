@@ -36,10 +36,13 @@
       "expo-font",
       "expo-secure-store",
       "expo-barcode-scanner",
-       ["expo-camera",
+      [
+        "expo-camera",
         {
           "cameraPermission": "Allow PresentX to access the camera"
-        }]
+        }
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

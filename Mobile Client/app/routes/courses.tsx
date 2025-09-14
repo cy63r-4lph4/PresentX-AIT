@@ -1,21 +1,31 @@
-import {
-  View,
-  Text,
-  StatusBar,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
 import React, { useEffect } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft } from "lucide-react-native";
 import { Image } from "react-native";
 import { router, useNavigation } from "expo-router";
-import ProgressBar from "@/components/ProgressBar";
+import {
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Bell, Search } from "lucide-react-native";
+import { useState } from "react";
 
 const Courses = () => {
   const navigation = useNavigation();
+  const [activeTab, setActiveTab] = useState("all");
+  const [expanded, setExpanded] = useState<number | null>(null);
 
+  const semesters = [
+    { id: 1, title: "Semester One", courses: 8 },
+    { id: 2, title: "Semester Two", courses: 8 },
+    { id: 3, title: "Semester Three", courses: 8 },
+    { id: 4, title: "Semester Four", courses: 8 },
+    { id: 5, title: "Semester Five", courses: 8 },
+  ];
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
@@ -44,31 +54,86 @@ const Courses = () => {
           >
             <ArrowLeft color="#000" size={24} />
           </TouchableOpacity>
-          <Text className="text-2xl font-medium">Courses</Text>
+          <View className="flex-1 flex-row justify-between items-center">
+            <Text className="text-2xl font-medium">Courses</Text>
+            <View className="flex-row items-center gap-4">
+              <Bell color="#000" size={22} />
+              <Search color="#000" size={22} />
+            </View>
+          </View>
         </View>
 
         <View
-          className="bg-secondary h-[135] mt-12 rounded-[34] mb-8 flex-row gap-2"
-          style={Style.shadow}
+          className="bg-secondary mt-6 rounded-[34] mb-8"
+          style={[Style.shadow, { minHeight: 120, padding: 16 }]}
         >
-          <View className="py-2 items-center space-y-1 justify-end px-2">
-            <View className="">
-              <View className="w-8 h-8 rounded-full bg-dot ml-4" />
-              <View className="w-5 h-5 rounded-full bg-dot ml-0" />
-              <View className="w-4 h-4 rounded-full bg-dot ml-8" />
-            </View>
+          <Text className="text-white text-lg font-semibold">
+            Semester Five
+          </Text>
+          <Text className="text-gray-200 text-sm mb-2">Active semester</Text>
+
+          {/* Progress line */}
+          <View className="flex-row items-center gap-2 mt-2">
+            <View className="h-2 flex-1 bg-green-500 rounded-full" />
+            <View className="h-2 w-10 bg-gray-300 rounded-full" />
           </View>
 
-          <View className="gap-4 justify-center">
-            <Text className="text-primary text-2xl font-semibold">
-              Program Status: 60%
-            </Text>
-            <ProgressBar total={52} completed={40} duration={800}/>
-            <Text className="text-gray-300 text-lg italic text-wrap w-[274]">
-              Active courses (5/7)
-            </Text>
-          </View>
+          <Text className="text-gray-200 text-xs mt-2">
+            Registered courses (6/8)
+          </Text>
         </View>
+
+        {/* Tabs */}
+        <View className="flex-row bg-gray-100 rounded-full p-1 mb-6">
+          {[
+            { key: "all", label: "All semesters" },
+            { key: "completed", label: "Completed" },
+            { key: "pending", label: "Pending" },
+          ].map((tab) => (
+            <TouchableOpacity
+              key={tab.key}
+              className={`flex-1 py-2 rounded-full ${
+                activeTab === tab.key ? "bg-secondary" : ""
+              }`}
+              onPress={() => setActiveTab(tab.key)}
+            >
+              <Text
+                className={`text-center ${
+                  activeTab === tab.key
+                    ? "text-white font-semibold"
+                    : "text-gray-600"
+                }`}
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Semester List */}
+        {semesters.map((sem) => (
+          <View key={sem.id} className="mb-4">
+            <TouchableOpacity
+              className="bg-white rounded-[20] p-4 border border-gray-200"
+              onPress={() => setExpanded(expanded === sem.id ? null : sem.id)}
+            >
+              <Text className="text-lg font-medium">{sem.title}</Text>
+              <Text className="text-sm text-gray-500">
+                All courses ({sem.courses})
+              </Text>
+            </TouchableOpacity>
+
+            {expanded === sem.id && (
+              <View className="mt-2 ml-4 border-l border-gray-200 pl-4">
+                {Array.from({ length: sem.courses }).map((_, idx) => (
+                  <Text key={idx} className="text-gray-700 mb-1">
+                    • Course {idx + 1}
+                  </Text>
+                ))}
+              </View>
+            )}
+          </View>
+        ))}
       </SafeAreaView>
     </>
   );

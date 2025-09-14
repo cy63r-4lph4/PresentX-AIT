@@ -1,6 +1,13 @@
 import { Route, Routes } from "react-router-dom";
 import SuperAdmin from "./pages/SuperAdmin";
-import { Dashboard, Feedback, Reports, ResetDeviceScreen, Settings, Timetable } from "./routes";
+import {
+  Dashboard,
+  Feedback,
+  Reports,
+  ResetDeviceScreen,
+  Settings,
+  Timetable,
+} from "./routes";
 import { ToastContainer } from "react-toastify";
 import Home from "./pages/Home";
 import AdminLogin from "./pages/AdnimLogin";
@@ -47,6 +54,7 @@ const App = () => {
             </ProtectedRoute>
           }
         >
+          <Route index element={<Dashboard />} />
           <Route path="overview" element={<Dashboard />} />
           <Route path="feedback" element={<Feedback />} />
           <Route path="timetable" element={<Timetable />} />

@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Attendance extends Model
 {
+    protected $table = 'attendance';
+
     protected $fillable = [
         'student_id',
         'event_id',
-        'marked_via',
+        'method',
         'marked_at',
     ];
 
