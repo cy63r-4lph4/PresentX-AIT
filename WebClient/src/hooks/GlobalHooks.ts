@@ -254,12 +254,22 @@ export const useAttendance = (eventId: string) => {
 
 
 
-export const useDashboard = () => {
+export function useDashboard() {
   return useQuery({
-    queryKey: ["dashboard-overview"],
+    queryKey: ["dashboard"],
     queryFn: async () => {
-      const { data } = await axios.get("/dashboard/overview");
-      return data;
+      const res = await axios.get("/dashboard/overview");
+      const { overview, streams, events } = res.data;
+
+      return {
+        total_students: overview.total_students,
+        total_events: overview.total_events,
+        total_present: overview.total_present,
+        total_absent: overview.total_absent,
+        streams,
+        events,
+      };
     },
   });
-};
+}
+
