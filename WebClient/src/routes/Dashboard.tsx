@@ -4,10 +4,10 @@ import { format } from "date-fns";
 
 export function Dashboard() {
   const [today, setToday] = useState("");
-  const [totalEvents, setTotalEvents] = useState(5); // replace with actual API call
-  const [totalPresent, setTotalPresent] = useState(212);
-  const [totalAbsent, setTotalAbsent] = useState(18);
-  const [totalStudents, setTotalStudents] = useState(230);
+  const [totalEvents, setTotalEvents] = useState(3); // replace with actual API call
+  const [totalPresent, setTotalPresent] = useState(0);
+  const [totalAbsent, setTotalAbsent] = useState(1);
+  const [totalStudents, setTotalStudents] = useState(1);
 
   useEffect(() => {
     setToday(format(new Date(), "EEEE, MMMM do yyyy"));

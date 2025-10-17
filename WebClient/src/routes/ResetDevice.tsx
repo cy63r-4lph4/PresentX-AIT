@@ -14,30 +14,37 @@ import {
   ShieldCheck,
   AlertTriangle,
 } from "lucide-react";
+import { useDevice, useResetDevice } from "@/hooks/GlobalHooks";
+import { toast } from "react-toastify";
+import type { AxiosError } from "axios";
 
 export function ResetDeviceScreen() {
   const [studentId, setStudentId] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [studentData, setStudentData] = useState<any>(null);
+  const {
+    data: studentData,
+    isError,
+    isFetching,
+    error,
+  } = useDevice({
+    studentId: studentId ?? 0,
+  });
+const resetDevice = useResetDevice();
 
-  // Simulated API Call
-  const handleSearch = async () => {
-    setLoading(true);
-    setTimeout(() => {
-      setStudentData({
-        name: "Jane Doe",
-        student_id: studentId,
-        stream: "Computer Science",
-        fingerprint: "A9:BF:23:98:Z7:CD",
-      });
-      setLoading(false);
-    }, 1500);
+  const handleSearch = () => {
+    if (!studentId) return;
+    setStudentId(studentId.trim());
   };
 
   const handleReset = () => {
-    alert(`Fingerprint for ${studentData.name} has been reset ✅`);
-    setStudentData(null);
-    setStudentId("");
+    if (!studentData?.student) return;
+    resetDevice.mutate(studentData.student.student_id, {
+      onSuccess: () => {
+        toast.success(
+          `Fingerprint for ${studentData.student?.first_name} has been reset ✅`
+        );
+        setStudentId("");
+      },
+    });
   };
 
   return (
@@ -62,10 +69,10 @@ export function ResetDeviceScreen() {
         />
         <Button
           onClick={handleSearch}
-          disabled={!studentId || loading}
+          disabled={!studentId || isFetching}
           className="bg-gradient-to-r from-emerald-500 to-blue-600 text-white font-medium px-6 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
         >
-          {loading ? (
+          {isFetching ? (
             <Loader2 className="animate-spin h-5 w-5" />
           ) : (
             <Search className="h-5 w-5" />
@@ -73,59 +80,94 @@ export function ResetDeviceScreen() {
           Search
         </Button>
       </div>
-
-      {/* Student Info */}
+      {/* Error Handling */}
+      {isError && (error as AxiosError).response?.status === 404 && (
+        <div className="max-w-lg mx-auto bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+          <p className="text-red-600 font-medium">❌ Student not found</p>
+          <p className="text-sm text-gray-600">
+            Please check the Student ID and try again.
+          </p>
+        </div>
+      )}
       {studentData && (
-        <Card className="max-w-lg mx-auto shadow-xl border border-emerald-100 rounded-2xl bg-white">
+        <Card className="max-w-2xl mx-auto shadow-xl border border-emerald-100 rounded-2xl bg-white">
           <CardHeader className="border-b pb-4">
             <div className="flex items-center gap-3">
               <Smartphone className="h-8 w-8 text-emerald-500" />
               <div>
                 <h3 className="text-xl font-semibold text-gray-800">
-                  {studentData.name}
+                  {studentData.student?.first_name}{" "}
+                  {studentData.student?.last_name}
                 </h3>
                 <p className="text-sm text-gray-500">
-                  ID: {studentData.student_id}
+                  Student ID: {studentData.student?.student_id}
                 </p>
               </div>
             </div>
           </CardHeader>
 
           <CardContent className="space-y-4 mt-4">
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-              <p className="text-sm text-gray-500">Stream</p>
-              <p className="text-lg font-medium text-gray-800">
-                {studentData.stream}
-              </p>
+            {/* Contact Info */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <p className="text-sm text-gray-500">Email</p>
+                <p className="text-lg font-medium text-gray-800">
+                  {studentData.student?.email}
+                </p>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <p className="text-sm text-gray-500">Phone</p>
+                <p className="text-lg font-medium text-gray-800">
+                  {studentData.student?.phone}
+                </p>
+              </div>
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-              <p className="text-sm text-gray-500">
-                Current Device Fingerprint
-              </p>
-              <p className="text-lg font-mono text-emerald-600">
-                {studentData.fingerprint}
-              </p>
-            </div>
+            {/* Device Info */}
+            {studentData.has_device ? (
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <p className="text-sm text-gray-500">
+                  Current Device Fingerprint
+                </p>
+                <p className="text-lg font-mono text-emerald-600 break-all">
+                  {studentData.device?.fingerprint}
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                <p className="text-sm text-red-700">
+                  This student has no registered device.
+                </p>
+              </div>
+            )}
 
-            <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
-              <p className="text-sm text-yellow-700">
-                Resetting the fingerprint will allow the student to register a
-                new device.
-              </p>
-            </div>
+            {/* Warning Section */}
+            {studentData.has_device && (
+              <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+                <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                <p className="text-sm text-yellow-700">
+                  Resetting the fingerprint will allow the student to register a
+                  new device.
+                </p>
+              </div>
+            )}
           </CardContent>
 
-          <CardFooter>
-            <Button
-              onClick={handleReset}
-              className="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white font-semibold px-4 py-3 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
-            >
-              <ShieldCheck className="h-5 w-5" />
-              Reset Device Fingerprint
-            </Button>
-          </CardFooter>
+          {/* Footer with Reset Button */}
+          {studentData.has_device && (
+            <CardFooter>
+              <Button
+                onClick={handleReset}
+                disabled={!studentData?.has_device}
+                className="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white font-semibold px-4 py-3 rounded-xl hover:shadow-lg transition-all flex items-center justify-center gap-2"
+              >
+                <ShieldCheck className="h-5 w-5" />
+                Reset Device Fingerprint
+              </Button>
+            </CardFooter>
+          )}
         </Card>
       )}
     </div>

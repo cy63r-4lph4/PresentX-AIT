@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from '../lib/axios';
 import qs from 'qs';
-import type { Event, UseEventsProps } from '@/components/Interfaces';
+import type { AttendanceResponse, Event, StudentDeviceResponse, UseEventsProps } from '@/components/Interfaces';
 import { useAuth } from '@/auth/AuthContex';
 
 export const useEvents = ({ Streams }: UseEventsProps) => {
@@ -204,6 +204,62 @@ export const useInvalidateEventToken = () => {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['event-token', variables.eventId] });
+    },
+  });
+};
+
+
+
+export const useDevice = ({ studentId }: { studentId: string }) => {
+  return useQuery<StudentDeviceResponse>({
+    queryKey: ["device", studentId],
+    queryFn: async () => {
+      const { data } = await axios.get("/device", {
+        params: { student_id: studentId },
+      });
+      return data;
+    },
+    enabled: !!studentId,
+        retry: false,
+  });
+};
+export const useResetDevice = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (studentId: string) => {
+      const { data } = await axios.post("/device/reset", {
+        student_id: studentId,
+      });
+      return data;
+    },
+    onSuccess: (_data, studentId) => {
+      queryClient.invalidateQueries({ queryKey: ["device", studentId] });
+    },
+  });
+};
+
+export const useAttendance = (eventId: string) => {
+  return useQuery<AttendanceResponse, Error>({
+    queryKey: ["attendance", eventId],
+    queryFn: async () => {
+      const { data } = await axios.get(`/lecturer/attendance/${eventId}`);
+      return data;
+    },
+    enabled: !!eventId,
+    retry: false,
+  });
+};
+
+
+
+
+export const useDashboard = () => {
+  return useQuery({
+    queryKey: ["dashboard-overview"],
+    queryFn: async () => {
+      const { data } = await axios.get("/dashboard/overview");
+      return data;
     },
   });
 };

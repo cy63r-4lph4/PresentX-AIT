@@ -36,7 +36,7 @@ export interface AddEventProps {
 export interface EventCardProps {
   session: Session;
   event: Event;
-  hall:string;
+  hall: string;
   idx: number;
   stream: string;
   onEdit: (event: Event) => void;
@@ -117,4 +117,41 @@ export interface SortedEventsProps {
 export interface Hall {
   id: number;
   name: string;
+}
+export type StudentDeviceResponse = {
+  success: boolean;
+  message?: string;
+  student?: {
+    id: number;
+    student_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+  };
+  has_device?: boolean;
+  device?: {
+    id: number;
+    fingerprint: string;
+  } | null;
+};
+
+export interface AttendanceStudent {
+  id: number;
+  name: string | null;
+  student_id: string;
+  stream: string | null;
+  method: string;
+  time: string | null;
+  is_registered: boolean;
+}
+
+export interface AttendanceResponse {
+  registered_count: number;
+  total_present: number;
+  turnover_rate: number;
+  students: {
+    registered: AttendanceStudent[];
+    unregistered: AttendanceStudent[];
+  };
 }
