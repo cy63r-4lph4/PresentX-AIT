@@ -9,6 +9,25 @@ import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { useDashboard } from "@/hooks/GlobalHooks";
 
+interface StreamInsight {
+  stream: string;
+  total_students: number;
+  present: number;
+  absent: number;
+}
+
+interface EventInsight {
+  title: string;
+  stream: string;
+  present: number;
+}
+
+interface DashboardData {
+  streams: StreamInsight[];
+  events: EventInsight[];
+}
+
+
 export function Dashboard() {
   const { data, isLoading, isError } = useDashboard();
 
@@ -116,7 +135,7 @@ export function Dashboard() {
             Stream Insights
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.streams.map((stream, idx) => (
+            {data.streams.map((stream: StreamInsight, idx: number) => (
               <div
                 key={idx}
                 className="p-5 rounded-xl bg-gradient-to-br from-indigo-500/10 to-blue-500/5 border border-white/10"
@@ -161,7 +180,7 @@ export function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {data.events.map((event, idx) => (
+                {data.events.map((event: EventInsight, idx: number) => (
                   <tr
                     key={idx}
                     className="bg-gradient-to-r from-zinc-50/60 to-zinc-100/30 dark:from-zinc-800/60 dark:to-zinc-700/30 rounded-lg hover:shadow-lg transition-all"
