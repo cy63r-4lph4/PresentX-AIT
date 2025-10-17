@@ -34,6 +34,19 @@ const Attendance = () => {
     setSelectedEvent(event);
     setScannerVisible(true);
   };
+  const getOrdinal = (n: number) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return s[(v - 20) % 10] || s[v] || s[0];
+  };
+
+  const today = new Date();
+  const day = today.getDate();
+  const month = today.toLocaleString("en-US", { month: "long" });
+  const weekday = today.toLocaleString("en-US", { weekday: "long" });
+  const year = today.getFullYear();
+
+  const formattedDate = `${weekday} ${day}${getOrdinal(day)} ${month}, ${year}`;
 
   return (
     <>
@@ -51,7 +64,7 @@ const Attendance = () => {
           >
             <ArrowLeft color="#000" size={24} />
           </TouchableOpacity>
-          <Text className="text-xl font-medium">Friday 2nd May, 2025</Text>
+          <Text className="text-xl font-medium">{formattedDate}</Text>
         </View>
         <View className="mb-8">
           <Calendar

@@ -15,11 +15,11 @@ class StudentSeeder extends Seeder
     {
         Student::insert([
             [
-                'first_name' => 'Student',
-                'last_name' => 'Name',
-                'student_id' => 'S001',
+                'first_name' => 'Emmanuel Barry',
+                'last_name' => 'Amewuho',
+                'student_id' => 'ADS23B00229Y',
                 'email' => 'student1@presentx.test',
-                'phone' => '1234567890',
+                'phone' => '0599306715',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]

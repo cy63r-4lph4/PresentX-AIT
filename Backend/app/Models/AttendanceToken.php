@@ -10,6 +10,7 @@ class AttendanceToken extends Model
     protected $fillable = [
         'event_id',
         'token',
+        'sms_code', 
         'starts_at',
         'expires_at',
         'is_active',

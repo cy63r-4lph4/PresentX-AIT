@@ -16,4 +16,9 @@ class CourseRegistration extends Model
     {
         return $this->belongsTo(Event::class);
     }
+    public function course()
+{
+    return $this->belongsTo(Course::class, 'course_code', 'code');
+}
+
 }

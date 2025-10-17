@@ -1,6 +1,8 @@
 <?php
 use App\Http\Controllers\CampusController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\HallController;
 use App\Models\Attendance;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +19,7 @@ Route::prefix('login')->group(function () {
     Route::post('/student', [AuthController::class, 'studentLogin']);
     Route::post('/admin', [AuthController::class, 'adminLogin']);
     Route::post('/lecturer', [AuthController::class, 'lecturerLogin']);
+    Route::post('attendance/sms', [AttendanceController::class, 'markBySms']);
 });
 Route::middleware('auth:sanctum')->group(
     function () {
@@ -37,6 +40,11 @@ Route::middleware(['auth:sanctum', 'role.admin'])->group(
         Route::get('campuses', [CampusController::class, 'index']);
         Route::get('halls', [HallController::class, 'index']);
         Route::get('courses', [CourseController::class, 'index']);
+        Route::get('device', [DeviceController::class, 'index']);
+        Route::post('device/reset', [DeviceController::class, 'reset']);
+        Route::get('/dashboard/overview', [DashboardController::class, 'overview']);
+
+
 
     }
 );
@@ -51,7 +59,10 @@ Route::middleware(['auth:sanctum', 'role.lecturer'])->group(function () {
         Route::post('invalidate', [EventController::class, 'invalidate']);
         Route::post('{eventId}', [EventController::class, 'generateToken']);
 
+
     });
+Route::get('/lecturer/attendance/{eventId}', [AttendanceController::class, 'index']);
+
 
 
 });

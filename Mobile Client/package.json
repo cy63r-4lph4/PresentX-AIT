@@ -22,7 +22,7 @@
     "@tanstack/react-query": "^5.83.0",
     "axios": "^1.11.0",
     "babel-plugin-dotenv-import": "^3.0.1",
-    "crypto-js": "^3.3.0",
+    "crypto-js": "^4.2.0",
     "dayjs": "^1.11.13",
     "eventemitter3": "^5.0.1",
     "expo": "53.0.22",

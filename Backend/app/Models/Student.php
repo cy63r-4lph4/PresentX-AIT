@@ -8,7 +8,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 class Student extends Model
-{    use HasApiTokens, Notifiable,HasFactory;
+{
+    use HasApiTokens, Notifiable, HasFactory;
 
     protected $fillable = ['phone', 'device_fingerprint'];
 
@@ -16,4 +17,16 @@ class Student extends Model
     {
         return $this->hasMany(Attendance::class);
     }
+
+    public function courseRegistrations()
+    {
+        return $this->hasMany(CourseRegistration::class);
+    }
+
+    public function events()
+    {
+        return $this->belongsToMany(Event::class, 'course_registrations')
+                    ->withTimestamps();
+    }
 }
+

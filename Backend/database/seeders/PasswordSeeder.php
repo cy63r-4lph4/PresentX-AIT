@@ -24,7 +24,7 @@ class PasswordSeeder extends Seeder
                 'password' => Hash::make('lecturerpass'),
             ],
             [
-                'user_id' => 'S001',
+                'user_id' => 'ADS23B00229Y',
                 'password' => Hash::make('studentpass'),
             ],
         ]);

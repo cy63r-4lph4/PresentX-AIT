@@ -19,7 +19,7 @@ class CourseRegistrationSeeder extends Seeder
             [
                 'course_code' => 'MGT101',
                 'stream_id' => 1,
-                'student_id' => 'S001',
+                'student_id' => 'ADS23B00229Y',
                 'academic_year_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -27,7 +27,7 @@ class CourseRegistrationSeeder extends Seeder
             [
                 'course_code' => 'UFS101',
                 'stream_id' => 1,
-                'student_id' => 'S001',
+                'student_id' => 'ADS23B00229Y',
                 'academic_year_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -35,7 +35,7 @@ class CourseRegistrationSeeder extends Seeder
             [
                 'course_code' => 'MATH101',
                 'stream_id' => 1,
-                'student_id' => 'S001',
+                'student_id' => 'ADS23B00229Y',
                 'academic_year_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -43,7 +43,7 @@ class CourseRegistrationSeeder extends Seeder
             [
                 'course_code' => 'ENGL101',
                 'stream_id' => 1,
-                'student_id' => 'S001',
+                'student_id' => 'ADS23B00229Y',
                 'academic_year_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),

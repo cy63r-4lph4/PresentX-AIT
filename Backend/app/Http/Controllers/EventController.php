@@ -272,6 +272,7 @@ class EventController extends Controller
             'starts_at' => $token->starts_at,
             'expires_at' => $token->expires_at,
             'is_active' => $token->is_active,
+            'sms_code' => $token->sms_code,
             'is_expired' => $now->greaterThan($token->expires_at),
             'can_be_reused' => $token->is_active && $now->lessThanOrEqualTo($token->expires_at),
         ]);
@@ -305,10 +306,7 @@ class EventController extends Controller
             'expires_at' => $autoExpiry ? $event->end_time : now()->addMinutes($expiryMinutes),
             'is_active' => true,
         ]);
-        Log::info('Generating token', [
-            'eventId_from_request' => $eventId,
-            'eventId_from_event' => $event->id,
-        ]);
+        
 
         return response()->json([
             'message' => 'New token generated. Previous token replaced.',
