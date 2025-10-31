@@ -87,12 +87,9 @@ const StudentQR: React.FC<StudentQRProps> = ({ refreshTrigger }) => {
 
   return (
     <View className="items-center justify-center">
-      <QRCode
-        value={qrData}
-        size={80}
-        color="#000"
-        backgroundColor="#fff"
-      />
+      {!updating && (
+        <QRCode value={qrData} size={80} color="#000" backgroundColor="#fff" />
+      )}
       {updating && (
         <Text className="text-xs text-gray-500 mt-2">Updating...</Text>
       )}

@@ -7,7 +7,7 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft } from "lucide-react-native";
 import { router, useNavigation } from "expo-router";
@@ -23,7 +23,11 @@ const IDCard = () => {
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
 
+  const handleUpdate = () => {
+    setRefreshTrigger((prev) => !prev);
+  };
   return (
     <>
       <StatusBar backgroundColor="#fff" barStyle="dark-content" />
@@ -129,7 +133,7 @@ const IDCard = () => {
                   borderRadius: 10,
                 }}
               >
-                <StudentQR />
+                <StudentQR refreshTrigger={refreshTrigger} />
               </View>
             </View>
           </View>
@@ -137,7 +141,7 @@ const IDCard = () => {
 
         {/* Action Buttons */}
         <View className="flex-row justify-around mt-10 mb-8">
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity onPress={handleUpdate}>
             <View className="bg-white px-5 py-3 rounded-xl border border-gray-300 shadow-sm">
               <Text
                 className="text-black text-base"

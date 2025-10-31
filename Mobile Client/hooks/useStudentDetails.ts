@@ -32,6 +32,7 @@ export const useStudentDetails = () => {
   } = useQuery<StudentDetails>({
     queryKey: ["student-details"],
     queryFn: fetchStudentDetails,
+    enabled:false
   });
 
   return {
