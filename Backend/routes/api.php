@@ -4,6 +4,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\HallController;
+use App\Http\Controllers\StudentController;
 use App\Models\Attendance;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EventController;
@@ -27,6 +28,8 @@ Route::middleware('auth:sanctum')->group(
         Route::get('events/today', [EventController::class, 'getTodaysEventsForStudent']);
         Route::post('/attendance/mark', [AttendanceController::class, 'markAuthenticated']);
             Route::get('/student/courses', [CourseController::class, 'studentCourses']);
+                        Route::get('/student/details', [StudentController::class, 'details']);
+
 
     }
 );
