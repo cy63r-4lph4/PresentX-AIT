@@ -30,4 +30,5 @@ class CourseController extends Controller
 
         return response()->json($course, 201);
     }
+    
 }
