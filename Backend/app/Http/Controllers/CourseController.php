@@ -33,30 +33,35 @@ class CourseController extends Controller
     }
 
     public function studentCourses(Request $request)
-    {
-        $student = $request->user();
+{
+    $student = $request->user();
 
-        $courses = CourseRegistration::with('event')
-            ->where('student_id', $student->id)
-            ->get()
-            ->map(function ($registration) {
-                $event = $registration->event;
-                return [
-                    'id' => $event->id,
-                    'code' => $event->title, // course code
-                    'description' => $event->description,
-                    'type' => $event->type,
-                    'start_time' => $event->start_time,
-                    'end_time' => $event->end_time,
-                    'date' => $event->date,
-                    'streams' => $event->streams,
-                ];
-            });
+    // Step 1: Get all the student's registered course codes
+    $courseCodes = \App\Models\CourseRegistration::where('student_id', $student->student_id)
+        ->pluck('course_code');
 
-        return response()->json([
-            'student' => $student->id,
-            'courses' => $courses,
-        ]);
-    }
+    // Step 2: Fetch all events whose title matches any of those codes
+    $events = \App\Models\Event::whereIn('title', $courseCodes)
+        ->get()
+        ->map(function ($event) {
+            return [
+                'id' => $event->id,
+                'code' => $event->title,
+                'description' => $event->description,
+                'type' => $event->type,
+                'start_time' => $event->start_time,
+                'end_time' => $event->end_time,
+                'date' => $event->date,
+                'streams' => $event->streams ?? [],
+            ];
+        });
+
+    // Step 3: Return the data
+    return response()->json([
+        'student_id' => $student->student_id,
+        'courses' => $events,
+    ]);
+}
+
 
 }
