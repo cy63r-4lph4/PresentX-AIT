@@ -51,7 +51,12 @@ public function studentCourses(Request $request)
     $events = Event::whereIn('title', $courseCodes)
         ->get()
         ->map(function ($event) use ($streamNames) {
-            // Format base data
+
+            // ✅ Use raw database values to avoid cast conflicts
+            $rawDate = $event->getRawOriginal('date');
+            $rawStart = $event->getRawOriginal('start_time');
+            $rawEnd = $event->getRawOriginal('end_time');
+
             $formatted = [
                 'id' => $event->id,
                 'code' => $event->title,
@@ -59,31 +64,33 @@ public function studentCourses(Request $request)
                 'type' => $event->type,
             ];
 
-            // Format date/time
+            // 🧠 Format recurring vs one-time schedules
             if ($event->type === 'recurring') {
-                // Extract day of week from date
-                $dayName = $event->date ? Carbon::parse($event->date)->format('l') : null;
+                $dayName = $rawDate ? Carbon::parse($rawDate)->format('l') : null;
                 $formatted['schedule'] = [
                     'day' => $dayName,
-                    'time' => sprintf(
-                        '%s - %s',
-                        Carbon::parse($event->start_time)->format('g:i A'),
-                        Carbon::parse($event->end_time)->format('g:i A')
-                    ),
+                    'time' => ($rawStart && $rawEnd)
+                        ? sprintf(
+                            '%s - %s',
+                            Carbon::createFromFormat('H:i:s', $rawStart)->format('g:i A'),
+                            Carbon::createFromFormat('H:i:s', $rawEnd)->format('g:i A')
+                        )
+                        : null,
                 ];
             } else {
-                // One-time event — pretty format
                 $formatted['schedule'] = [
-                    'date' => $event->date ? Carbon::parse($event->date)->toFormattedDateString() : null,
-                    'time' => sprintf(
-                        '%s - %s',
-                        Carbon::parse($event->start_time)->format('g:i A'),
-                        Carbon::parse($event->end_time)->format('g:i A')
-                    ),
+                    'date' => $rawDate ? Carbon::parse($rawDate)->toFormattedDateString() : null,
+                    'time' => ($rawStart && $rawEnd)
+                        ? sprintf(
+                            '%s - %s',
+                            Carbon::createFromFormat('H:i:s', $rawStart)->format('g:i A'),
+                            Carbon::createFromFormat('H:i:s', $rawEnd)->format('g:i A')
+                        )
+                        : null,
                 ];
             }
 
-            // Convert stream IDs to names
+            // 🔄 Convert stream IDs to names
             $streams = [];
             if (is_array($event->streams)) {
                 foreach ($event->streams as $id) {

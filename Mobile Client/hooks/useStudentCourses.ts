@@ -31,7 +31,6 @@ export const useStudentCourses = () => {
     queryKey: ["student-courses"],
     queryFn: fetchStudentCourses,
   });
-
   return {
     courses,
     loading,

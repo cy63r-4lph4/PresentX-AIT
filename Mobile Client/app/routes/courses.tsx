@@ -117,12 +117,29 @@ const Courses = () => {
                     <Text className="text-gray-700 mb-1">
                       Type: {course.type}
                     </Text>
-                    <Text className="text-gray-700 mb-1">
-                      Date: {course.date}
-                    </Text>
-                    <Text className="text-gray-700 mb-1">
-                      Time: {course.start_time} - {course.end_time}
-                    </Text>
+
+                    {/* ✅ Recurring: show day + time */}
+                    {course.schedule?.day && (
+                      <Text className="text-gray-700 mb-1">
+                        Day: {course.schedule.day}
+                      </Text>
+                    )}
+
+                    {/* ✅ One-time: show date + time */}
+                    {course.schedule?.date && (
+                      <Text className="text-gray-700 mb-1">
+                        Date: {course.schedule.date}
+                      </Text>
+                    )}
+
+                    {/* ✅ Show time in all cases */}
+                    {course.schedule?.time && (
+                      <Text className="text-gray-700 mb-1">
+                        Time: {course.schedule.time}
+                      </Text>
+                    )}
+
+                    {/* ✅ Streams */}
                     {course.streams?.length > 0 && (
                       <Text className="text-gray-700 mb-1">
                         Streams: {course.streams.join(", ")}
