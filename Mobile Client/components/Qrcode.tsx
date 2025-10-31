@@ -6,19 +6,22 @@ import { useStudentDetails } from "@/hooks/useStudentDetails";
 
 const STORAGE_KEY = "student_details_cache";
 
-const StudentQR = () => {
-  const { student, loading, error } = useStudentDetails();
+interface StudentQRProps {
+  refreshTrigger?: boolean; // Controlled externally (Update Card button)
+}
+
+const StudentQR: React.FC<StudentQRProps> = ({ refreshTrigger }) => {
+  const { refetch } = useStudentDetails(); // We'll only fetch on-demand
   const [cachedStudent, setCachedStudent] = useState<any>(null);
   const [ready, setReady] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
-  // 1️⃣ Try to load cached data initially
+  // 1️⃣ Load from cache on mount
   useEffect(() => {
     const loadCache = async () => {
       try {
         const saved = await AsyncStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          setCachedStudent(JSON.parse(saved));
-        }
+        if (saved) setCachedStudent(JSON.parse(saved));
       } catch (err) {
         console.warn("Failed to load cached student:", err);
       } finally {
@@ -28,52 +31,71 @@ const StudentQR = () => {
     loadCache();
   }, []);
 
-  // 2️⃣ When fresh data arrives, update cache
+  // 2️⃣ When refreshTrigger changes, fetch latest & update cache
   useEffect(() => {
-    const updateCache = async () => {
-      if (student) {
-        try {
-          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(student));
-          setCachedStudent(student);
-        } catch (err) {
-          console.warn("Failed to save student cache:", err);
+    const refreshData = async () => {
+      if (!refreshTrigger) return; // do nothing unless triggered
+
+      setUpdating(true);
+      try {
+        const res = await refetch(); // manually refetch from API
+        const data = res.data;
+        if (data) {
+          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          setCachedStudent(data);
+          console.log("✅ Student data updated in cache");
         }
+      } catch (err) {
+        console.warn("❌ Failed to refresh student data:", err);
+      } finally {
+        setUpdating(false);
       }
     };
-    updateCache();
-  }, [student]);
 
-  // 3️⃣ Determine what data to show
-  const displayStudent = student || cachedStudent;
+    refreshData();
+  }, [refreshTrigger]);
 
-  if (!ready) {
+  // 3️⃣ Display loading state
+  if (!ready && !cachedStudent) {
     return (
-      <View className="flex-1 items-center justify-center">
+      <View className="items-center justify-center">
         <ActivityIndicator size="large" color="#611FE7" />
       </View>
     );
   }
 
-  if (!displayStudent) {
+  // 4️⃣ Handle missing data
+  if (!cachedStudent) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <Text className="text-gray-500">No student data available.</Text>
+      <View className="items-center justify-center">
+        <Text className="text-gray-500 text-center">
+          No student data available.
+        </Text>
       </View>
     );
   }
 
-  // 4️⃣ Prepare QR data
+  // 5️⃣ Prepare QR data
   const qrData = JSON.stringify({
-    name: displayStudent.name,
-    student_id: displayStudent.student_id,
-    email: displayStudent.email,
-    phone: displayStudent.phone,
-    registered_courses: displayStudent.registered_courses,
+    name: cachedStudent.name,
+    student_id: cachedStudent.student_id,
+    email: cachedStudent.email,
+    phone: cachedStudent.phone,
+    stream: cachedStudent.stream,
+    registered_courses: cachedStudent.registered_courses,
   });
 
   return (
-    <View className="">
-      <QRCode value={qrData} size={80} color="#000" backgroundColor="#fff" />
+    <View className="items-center justify-center">
+      <QRCode
+        value={qrData}
+        size={80}
+        color="#000"
+        backgroundColor="#fff"
+      />
+      {updating && (
+        <Text className="text-xs text-gray-500 mt-2">Updating...</Text>
+      )}
     </View>
   );
 };
