@@ -6,7 +6,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\CourseRegistration;
+use App\Models\Event;
+use Carbon\Carbon;
+use App\Models\Stream;
 use Illuminate\Http\Request;
+
 
 class CourseController extends Controller
 {
@@ -32,31 +36,69 @@ class CourseController extends Controller
         return response()->json($course, 201);
     }
 
-    public function studentCourses(Request $request)
+public function studentCourses(Request $request)
 {
     $student = $request->user();
 
-    // Step 1: Get all the student's registered course codes
-    $courseCodes = \App\Models\CourseRegistration::where('student_id', $student->student_id)
+    // 1️⃣ Fetch student’s registered course codes
+    $courseCodes = CourseRegistration::where('student_id', $student->student_id)
         ->pluck('course_code');
 
-    // Step 2: Fetch all events whose title matches any of those codes
-    $events = \App\Models\Event::whereIn('title', $courseCodes)
+    // 2️⃣ Preload all streams (id → name)
+    $streamNames = Stream::pluck('name', 'id')->toArray();
+
+    // 3️⃣ Fetch matching events
+    $events = Event::whereIn('title', $courseCodes)
         ->get()
-        ->map(function ($event) {
-            return [
+        ->map(function ($event) use ($streamNames) {
+            // Format base data
+            $formatted = [
                 'id' => $event->id,
                 'code' => $event->title,
                 'description' => $event->description,
                 'type' => $event->type,
-                'start_time' => $event->start_time,
-                'end_time' => $event->end_time,
-                'date' => $event->date,
-                'streams' => $event->streams ?? [],
             ];
+
+            // Format date/time
+            if ($event->type === 'recurring') {
+                // Extract day of week from date
+                $dayName = $event->date ? Carbon::parse($event->date)->format('l') : null;
+                $formatted['schedule'] = [
+                    'day' => $dayName,
+                    'time' => sprintf(
+                        '%s - %s',
+                        Carbon::parse($event->start_time)->format('g:i A'),
+                        Carbon::parse($event->end_time)->format('g:i A')
+                    ),
+                ];
+            } else {
+                // One-time event — pretty format
+                $formatted['schedule'] = [
+                    'date' => $event->date ? Carbon::parse($event->date)->toFormattedDateString() : null,
+                    'time' => sprintf(
+                        '%s - %s',
+                        Carbon::parse($event->start_time)->format('g:i A'),
+                        Carbon::parse($event->end_time)->format('g:i A')
+                    ),
+                ];
+            }
+
+            // Convert stream IDs to names
+            $streams = [];
+            if (is_array($event->streams)) {
+                foreach ($event->streams as $id) {
+                    if (isset($streamNames[$id])) {
+                        $streams[] = $streamNames[$id];
+                    }
+                }
+            }
+
+            $formatted['streams'] = $streams;
+
+            return $formatted;
         });
 
-    // Step 3: Return the data
+    // 4️⃣ Return formatted data
     return response()->json([
         'student_id' => $student->student_id,
         'courses' => $events,
