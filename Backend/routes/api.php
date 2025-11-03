@@ -20,8 +20,9 @@ Route::prefix('login')->group(function () {
     Route::post('/student', [AuthController::class, 'studentLogin']);
     Route::post('/admin', [AuthController::class, 'adminLogin']);
     Route::post('/lecturer', [AuthController::class, 'lecturerLogin']);
-    Route::post('attendance/sms', [AttendanceController::class, 'markBySms']);
 });
+    Route::post('attendance/sms',  [AttendanceController::class, 'markBySms']);
+
 Route::middleware('auth:sanctum')->group(
     function () {
         Route::post('/logout', [AuthController::class, 'logout']);

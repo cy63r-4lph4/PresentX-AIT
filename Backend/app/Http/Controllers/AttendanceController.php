@@ -11,9 +11,47 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
+
+
 
 class AttendanceController extends Controller
 {
+  private function sendSms($to, $message)
+{
+    $username = env('AFRICASTALKING_USERNAME', 'sandbox');
+    $apiKey = env('AFRICASTALKING_API_KEY');
+    $url = 'https://api.sandbox.africastalking.com/version1/messaging';
+
+    try {
+        $response = Http::withHeaders([
+            'apiKey' => $apiKey,
+            'Accept' => 'application/json',
+            'Content-Type' => 'application/x-www-form-urlencoded',
+        ])
+        ->asForm()
+        ->post($url, [
+            'username' => $username,
+            'to' => $to,
+            'message' => $message,
+            'from' => '11231',
+        ]);
+
+
+        // ✅ Some failures are reported as success with error messages
+        $json = $response->json();
+
+        return $json;
+    } catch (\Throwable $e) {
+        Log::error('🚨 Exception when sending SMS', [
+            'error' => $e->getMessage(),
+            'to' => $to,
+            'trace' => $e->getTraceAsString(),
+        ]);
+        return null;
+    }
+}
+
 
  public function index($eventId)
 {
@@ -139,38 +177,78 @@ class AttendanceController extends Controller
         return $this->mark($request);
     }
 
+
 public function markBySms(Request $request)
 {
-    $from = $request->input('from'); // phone number
-    $body = trim($request->input('body')); // e.g. token
+    Log::info('📩 markBySms() called', ['payload' => $request->all()]);
+
+    // Get sender and message
+    $from = $request->input('from') ?? $request->input('phone');
+
+    // Some gateways use "text" instead of "body" or "message"
+    $body = trim(
+        $request->input('body') ??
+        $request->input('message') ??
+        $request->input('text') ??
+        ''
+    );
+
+    Log::info('Incoming SMS details', ['from' => $from, 'body' => $body]);
+
+    // Normalize phone
+    $normalized = preg_replace('/^\+233/', '0', $from);
+    $international = preg_replace('/^0/', '+233', $from);
+    Log::debug('Normalized phone numbers', [
+        'normalized' => $normalized,
+        'international' => $international,
+    ]);
 
     // Find student by phone
-    $student = Student::where('phone', $from)->first();
+    $student = Student::where('phone', $from)
+        ->orWhere('phone', $normalized)
+        ->orWhere('phone', $international)
+        ->first();
 
     if (!$student) {
-        return response()->json([
-            'message' => 'Student with this phone number not found.'
-        ], 404);
+        Log::warning('Student not found for number', ['from' => $from]);
+        $this->sendSms($from, "❌ PresentX: Your number is not registered. Please contact admin.");
+        return response()->json(['message' => 'Student not found'], 200);
     }
 
-    // Extract token from SMS body
-    $tokenValue = $body;
+    Log::info('Student found', [
+        'student_id' => $student->student_id,
+        'name' => $student->first_name . ' ' . $student->last_name,
+    ]);
+
+    // Token from SMS body
+    $tokenValue = strtoupper(trim($body)); // optional normalization
 
     $token = AttendanceToken::where('token', $tokenValue)
         ->where('is_active', true)
         ->first();
 
     if (!$token) {
-        return response()->json([
-            'message' => 'Invalid or inactive attendance token.'
-        ], 404);
+        Log::warning('Invalid or inactive token', ['token' => $tokenValue]);
+        $this->sendSms($from, "❌ PresentX: Invalid or inactive attendance token.");
+        return response()->json(['message' => 'Invalid or inactive attendance token.'], 200);
     }
+
+    Log::info('Valid token found', [
+        'token_id' => $token->id,
+        'event_id' => $token->event_id,
+        'valid_from' => $token->starts_at,
+        'valid_until' => $token->expires_at,
+    ]);
 
     $now = Carbon::now();
     if ($now->lt($token->starts_at) || $now->gt($token->expires_at)) {
-        return response()->json([
-            'message' => 'This token is not valid at this time.'
-        ], 403);
+        Log::warning('Token expired or not yet active', [
+            'now' => $now,
+            'starts_at' => $token->starts_at,
+            'expires_at' => $token->expires_at,
+        ]);
+        $this->sendSms($from, "⚠️ PresentX: This attendance token has expired or is not yet active.");
+        return response()->json(['message' => 'Token expired or inactive.'], 200);
     }
 
     $alreadyMarked = Attendance::where('student_id', $student->student_id)
@@ -178,14 +256,23 @@ public function markBySms(Request $request)
         ->exists();
 
     if ($alreadyMarked) {
-        return response()->json([
-            'message' => 'Attendance already marked for this event.'
-        ], 409);
+        Log::info('Attendance already marked', [
+            'student_id' => $student->student_id,
+            'event_id' => $token->event_id,
+        ]);
+        $this->sendSms($from, "ℹ️ PresentX: Your attendance has already been marked for this session.");
+        return response()->json(['message' => 'Already marked.'], 200);
     }
 
     $isRegistered = CourseRegistration::where('student_id', $student->student_id)
         ->where('course_code', $token->event->course_id ?? null)
         ->exists();
+
+    Log::debug('Course registration check', [
+        'student_id' => $student->student_id,
+        'course_code' => $token->event->course_id ?? null,
+        'is_registered' => $isRegistered,
+    ]);
 
     $attendance = Attendance::create([
         'student_id' => $student->student_id,
@@ -195,10 +282,20 @@ public function markBySms(Request $request)
         'is_registered' => $isRegistered,
     ]);
 
+    Log::info('Attendance created successfully', [
+        'attendance_id' => $attendance->id,
+        'student_id' => $student->student_id,
+        'event_id' => $token->event_id,
+    ]);
+
+    $this->sendSms($from, "✅ PresentX: Hi {$student->first_name}, your attendance for event {$token->event_id} has been successfully marked.");
+    Log::info('SMS confirmation sent', ['to' => $from]);
+
     return response()->json([
         'message' => 'Attendance marked successfully via SMS.',
         'attendance' => $attendance
     ], 201);
 }
+
 
 }
