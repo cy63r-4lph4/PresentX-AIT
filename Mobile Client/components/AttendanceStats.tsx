@@ -1,57 +1,63 @@
+// components/AttendanceStats.tsx
+import { View, Text, ActivityIndicator } from "react-native";
 import React from "react";
-import { View, Text, FlatList } from "react-native";
-import { MotiView } from "moti";
+import { useStudentCourses } from "@/hooks/useStudentCourses";
 
-type Course = {
-  code: string;
-  title: string;
-  percentage: number;
-  eligible: boolean;
-};
+export const AttendanceStats = () => {
+  const { courses, loading, error } = useStudentCourses();
 
-type AttendanceStatsProps = {
-  courses: Course[];
-};
+  if (loading)
+    return (
+      <View className="bg-[#f9f9ff] p-4 rounded-2xl mb-6 shadow-sm items-center justify-center">
+        <ActivityIndicator color="#611FE7" />
+        <Text className="text-gray-500 mt-2">Fetching attendance...</Text>
+      </View>
+    );
 
-export const AttendanceStats = ({ courses }: AttendanceStatsProps) => {
+  if (error)
+    return (
+      <View className="bg-[#fff5f5] p-4 rounded-2xl mb-6 shadow-sm">
+        <Text className="text-red-600 font-medium text-center">{error}</Text>
+      </View>
+    );
+
+  if (!courses || courses.length === 0)
+    return (
+      <View className="bg-[#f9f9ff] p-4 rounded-2xl mb-6 shadow-sm">
+        <Text className="text-gray-500 text-center">No courses found</Text>
+      </View>
+    );
+
   return (
     <View className="mt-4 mb-6">
-      <Text className="text-xl font-semibold mb-2 text-gray-900">
-        Course Attendance
-      </Text>
-
-      <FlatList
-        data={courses}
-        keyExtractor={(item) => item.code}
-        renderItem={({ item, index }) => (
-          <MotiView
-            from={{ opacity: 0, translateY: 10 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{ delay: index * 100, type: "timing" }}
-            className="bg-[#f9f9ff] p-4 rounded-2xl mb-3 shadow-sm flex-row justify-between items-center"
-          >
-            <View className="flex-1">
-              <Text className="text-lg font-semibold text-[#611FE7]">
-                {item.code}
-              </Text>
-              <Text className="text-sm text-gray-500">{item.title}</Text>
-            </View>
-
-            <View className="items-end">
-              <Text className="text-xl font-bold text-[#611FE7]">
-                {item.percentage}%
-              </Text>
-              <Text
-                className={`text-sm ${
-                  item.eligible ? "text-green-600" : "text-red-500"
-                }`}
-              >
-                {item.eligible ? "Eligible" : "At Risk"}
-              </Text>
-            </View>
-          </MotiView>
-        )}
-      />
+      <Text className="text-xl font-semibold mb-2">Course Attendance</Text>
+      {courses.map((course, index) => (
+        <View
+          key={index}
+          className="bg-[#f9f9ff] p-4 rounded-2xl mb-3 shadow-sm flex-row justify-between items-center"
+        >
+          <View className="flex-1">
+            <Text className="text-lg font-semibold text-[#611FE7]">
+              {course.code}
+            </Text>
+            <Text className="text-sm text-gray-500">{course.title}</Text>
+          </View>
+          <View className="items-end">
+            <Text className="text-xl font-bold text-[#611FE7]">
+              {course.percentage ?? 0}%
+            </Text>
+            <Text
+              className={`text-sm ${
+                (course.percentage ?? 0) >= 75
+                  ? "text-green-600"
+                  : "text-red-500"
+              }`}
+            >
+              {(course.percentage ?? 0) >= 75 ? "Eligible" : "At Risk"}
+            </Text>
+          </View>
+        </View>
+      ))}
     </View>
   );
 };

@@ -16,6 +16,7 @@ import { useTodaysEvents } from "@/hooks/TodayCourse";
 import WithLoveSVG from "../../assets/icons/withLove.svg";
 import QRScannerModal from "@/components/ScannerModal";
 import EventCard from "@/components/EventCard";
+import { AttendanceStats } from "@/components/AttendanceStats";
 
 const Attendance = () => {
   const navigation = useNavigation();
@@ -91,6 +92,7 @@ const Attendance = () => {
             }}
           />
         </View>
+        <AttendanceStats/>
         <View className="flex-1">
           <Text className="text-xl font-semibold">Today's Events</Text>
           <ScrollView
