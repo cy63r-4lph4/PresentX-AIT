@@ -182,10 +182,6 @@ export default function LecturerAttendance() {
                       </CardHeader>
                       <CardContent className="space-y-2">
                         <p className="text-sm">
-                          <span className="font-medium">Stream:</span>{" "}
-                          {s.stream ?? "—"}
-                        </p>
-                        <p className="text-sm">
                           <span className="font-medium">Method:</span>{" "}
                           {s.method}
                         </p>

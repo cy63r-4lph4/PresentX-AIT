@@ -193,7 +193,6 @@ public function markBySms(Request $request)
         ''
     );
 
-    Log::info('Incoming SMS details', ['from' => $from, 'body' => $body]);
 
     // Normalize phone
     $normalized = preg_replace('/^\+233/', '0', $from);
@@ -215,15 +214,12 @@ public function markBySms(Request $request)
         return response()->json(['message' => 'Student not found'], 200);
     }
 
-    Log::info('Student found', [
-        'student_id' => $student->student_id,
-        'name' => $student->first_name . ' ' . $student->last_name,
-    ]);
+  
 
     // Token from SMS body
     $tokenValue = strtoupper(trim($body)); // optional normalization
 
-    $token = AttendanceToken::where('token', $tokenValue)
+    $token = AttendanceToken::where('sms_code', $tokenValue)
         ->where('is_active', true)
         ->first();
 

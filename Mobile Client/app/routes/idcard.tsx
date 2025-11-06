@@ -7,10 +7,14 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft } from "lucide-react-native";
 import { router, useNavigation } from "expo-router";
+import * as Sharing from "expo-sharing";
+import * as Print from "expo-print";
+import { captureRef } from "react-native-view-shot";
+import * as FileSystem from "expo-file-system";
 import StudentQR from "@/components/Qrcode";
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -24,9 +28,52 @@ const IDCard = () => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
+  const cardRef = useRef<View>(null);
 
   const handleUpdate = () => {
     setRefreshTrigger((prev) => !prev);
+  };
+  const handlePrint = async () => {
+    try {
+      // 1️⃣ Capture the card as an image (PNG)
+      const uri = await captureRef(cardRef, {
+        format: "png",
+        quality: 1,
+      });
+
+      // 2️⃣ Convert the image to base64
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // 3️⃣ Generate the PDF
+      const fileName = `StudentCard_Emmanuel_Barry_Amewuho_${
+        new Date().toISOString().split("T")[0]
+      }`;
+
+      const { uri: pdfUri } = await Print.printToFileAsync({
+        html: `
+        <html>
+          <body style="display:flex;align-items:center;justify-content:center;height:100vh;background:#f9f9f9;margin:0;padding:0;">
+            <img 
+              src="data:image/png;base64,${base64}" 
+              style="width:90%;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.2);" 
+            />
+          </body>
+        </html>
+      `,
+        fileName,
+      });
+
+      // 4️⃣ Share or print
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(pdfUri);
+      } else {
+        await Print.printAsync({ uri: pdfUri });
+      }
+    } catch (err) {
+      console.error("❌ Error printing card:", err);
+    }
   };
   return (
     <>
@@ -49,6 +96,7 @@ const IDCard = () => {
         {/* Card Display */}
         <View className="flex-1 items-center justify-center mt-2">
           <View
+            ref={cardRef}
             style={{
               width: CARD_HEIGHT,
               height: CARD_WIDTH,
@@ -153,7 +201,7 @@ const IDCard = () => {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity onPress={handlePrint}>
             <View className="bg-[#0985B6] px-5 py-3 rounded-xl shadow-md">
               <Text
                 className="text-white text-base"
