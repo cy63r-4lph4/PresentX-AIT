@@ -294,6 +294,25 @@ public function markBySms(Request $request)
 }
 
 public function getSessionsSoFar($event){
-    
+    if($event->type!='recurring'){
+        return 1;
+    }
+    $start=Carbon::parse($event->date);
+    $today=Carbon::today();
+    if($start->greaterThan($today)){
+        return 0;
+    }
+    $dayName=$start->format(format: "l");
+    $weeks=0;
+    $cursor=$start->copy();
+
+    while($cursor->lessThanOrEqualTo($today)){
+        if($cursor->format("l")===$dayName){
+            $weeks++;
+        }
+        $cursor->addWeek();
+        
+    }
+    return $weeks;
 }
 }
