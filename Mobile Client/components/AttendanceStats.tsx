@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAttendanceStats } from "@/hooks/useAttendanceStats";
-import { ProgressBar } from "react-native-paper"; // install if not present
+import { ProgressBar } from "react-native-paper";
 
 export const AttendanceStats = () => {
   const { stats, summary, loading, error } = useAttendanceStats();

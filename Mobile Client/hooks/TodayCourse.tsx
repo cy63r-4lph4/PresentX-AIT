@@ -22,7 +22,6 @@ export const useTodaysEvents = () => {
     queryKey: ["todays-events"],
     queryFn: fetchTodaysEvents,
   });
-
   return {
     events,
     loading,

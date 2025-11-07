@@ -4,7 +4,6 @@ import * as SecureStore from "expo-secure-store";
 import EventEmitter from "eventemitter3";
 
 export const logoutEmitter = new EventEmitter();
-
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
