@@ -9,7 +9,6 @@ const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
 });
-
 // Attach token to each request
 api.interceptors.request.use(async (config) => {
   try {

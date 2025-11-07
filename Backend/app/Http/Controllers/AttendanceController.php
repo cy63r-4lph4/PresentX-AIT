@@ -293,5 +293,7 @@ public function markBySms(Request $request)
     ], 201);
 }
 
-
+public function getSessionsSoFar($event){
+    
+}
 }

@@ -461,6 +461,7 @@ class EventController extends Controller
 
         $attendedEventIds = DB::table('attendance')
             ->where('student_id', $studentId)
+            ->whereDate("marked_at",$todayDate)
             ->pluck('event_id')
             ->toArray();
 
