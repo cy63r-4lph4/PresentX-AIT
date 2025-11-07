@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\DB;
+
 
 
 
@@ -314,5 +316,39 @@ public function getSessionsSoFar($event){
         
     }
     return $weeks;
+}
+public function getAttendanceStats(Request $request){
+    $studentId = $request->user()->student_id ?? $request->student_id;
+ $recurringEvents = Event::where('type', 'recurring')->get();
+
+    $stats = $recurringEvents->map(function ($event) use ($studentId) {
+        $totalSessionsSoFar = $this->getSessionsSoFar($event);
+
+        $attended = DB::table('attendance')
+            ->where('student_id', $studentId)
+            ->where('event_id', $event->id)
+            ->whereDate('marked_at', '>=', $event->date)
+            ->whereDate('marked_at', '<=', Carbon::today())
+            ->count();
+
+        return [
+            'course' => $event->title,
+            'total_sessions_so_far' => $totalSessionsSoFar,
+            'attended_sessions' => $attended,
+            'attendance_percentage' => $totalSessionsSoFar > 0
+                ? round(($attended / $totalSessionsSoFar) * 100, 1)
+                : 0,
+        ];
+    });
+
+    return response()->json([
+        'stats' => $stats,
+        'summary' => [
+            'total_courses' => $stats->count(),
+            'overall_attendance' => round(
+                $stats->avg('attendance_percentage'), 1
+            )
+        ]
+    ]);
 }
 }
