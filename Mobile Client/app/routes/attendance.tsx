@@ -2,20 +2,19 @@ import {
   View,
   Text,
   StatusBar,
-  TextInput,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, CalendarDaysIcon } from "lucide-react-native";
-import { Image } from "react-native";
-import { router, useNavigation } from "expo-router";
+import { ArrowLeft } from "lucide-react-native";
+import { useNavigation, router } from "expo-router";
 import { Calendar } from "react-native-calendars";
-import { useTodaysEvents } from "@/hooks/TodayCourse";
 import WithLoveSVG from "../../assets/icons/withLove.svg";
 import QRScannerModal from "@/components/ScannerModal";
 import EventCard from "@/components/EventCard";
+import { useTodaysEvents } from "@/hooks/TodayCourse";
 import { AttendanceStats } from "@/components/AttendanceStats";
 
 const Attendance = () => {
@@ -29,12 +28,11 @@ const Attendance = () => {
   }, [navigation]);
 
   const handleCardPress = (event) => {
-    if (event.marked) {
-      return;
-    }
+    if (event.marked) return;
     setSelectedEvent(event);
     setScannerVisible(true);
   };
+
   const getOrdinal = (n: number) => {
     const s = ["th", "st", "nd", "rd"];
     const v = n % 100;
@@ -46,111 +44,105 @@ const Attendance = () => {
   const month = today.toLocaleString("en-US", { month: "long" });
   const weekday = today.toLocaleString("en-US", { weekday: "long" });
   const year = today.getFullYear();
-
   const formattedDate = `${weekday} ${day}${getOrdinal(day)} ${month}, ${year}`;
 
   return (
     <>
-      <StatusBar
-        backgroundColor="#fff"
-        barStyle="dark-content"
-        hidden={false}
-      />
-      <SafeAreaView className="flex-1 px-3 w-full bg-white">
-        <View className="flex-row items-center py-2  gap-4">
-          <TouchableOpacity
-            onPress={() => {
-              router.back();
-            }}
-          >
+      <StatusBar backgroundColor="#fff" barStyle="dark-content" />
+      <SafeAreaView className="flex-1 bg-white px-3">
+        {/* ---------------- Header ---------------- */}
+        <View className="flex-row items-center py-3 gap-4 mb-2">
+          <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeft color="#000" size={24} />
           </TouchableOpacity>
-          <Text className="text-xl font-medium">{formattedDate}</Text>
+          <Text className="text-lg font-semibold text-gray-800">
+            {formattedDate}
+          </Text>
         </View>
-        <View className="mb-8">
+
+        {/* ---------------- Calendar ---------------- */}
+        <View className="mb-5">
           <Calendar
-            disableArrowLeft={true}
-            disableArrowRight={true}
+            disableArrowLeft
+            disableArrowRight
             hideExtraDays
             renderHeader={() => <></>}
             renderArrow={() => <></>}
             theme={{
               backgroundColor: "white",
               calendarBackground: "white",
-              textSectionTitleColor: "#white",
-              selectedDayBackgroundColor: "",
-              selectedDayTextColor: "#ffffff",
-              todayTextColor: "white",
+              todayTextColor: "#fff",
               todayBackgroundColor: "#611FE7",
-              dayTextColor: "black",
+              dayTextColor: "#000",
               textDisabledColor: "#ccc",
-              monthTextColor: "#5344C#611FE78",
-              textMonthFontWeight: "bold",
               textDayFontSize: 16,
-              textMonthFontSize: 18,
-              textDayHeaderFontSize: 14,
+              textDayHeaderFontSize: 13,
             }}
           />
         </View>
-        <AttendanceStats/>
-        <View className="flex-1">
-          <Text className="text-xl font-semibold">Today's Events</Text>
-          <ScrollView
-            className="flex-1 mt-4"
-            showsVerticalScrollIndicator={false}
-          >
-            {loading ? (
-              <View className="flex items-center justify-center py-16 px-6 rounded-2xl bg-[#F3F4F6] mt-6 shadow-sm">
-                <Text className="text-xl font-semibold text-gray-600 mb-2">
-                  ⏳ Hold on...
-                </Text>
-                <Text className="text-base text-gray-500 text-center">
-                  We're fetching your schedule for today.
-                </Text>
-              </View>
-            ) : error ? (
-              <View className="items-center justify-center py-10 px-4 space-y-4">
-                <Text className="text-red-500 text-center text-base">
-                  ❌ {error}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => refetch()}
-                  className="bg-purple-600 px-6 py-2 rounded-full shadow-lg"
-                >
-                  <Text className="text-white font-semibold">🔁 Retry</Text>
-                </TouchableOpacity>
-              </View>
-            ) : events.length === 0 ? (
-              <View className="flex-1 justify-center items-center py-20">
-                <WithLoveSVG width={100} height={100} />
 
-                <Text className="text-2xl font-semibold text-gray-600 text-center">
-                  No events today
-                </Text>
-                <Text className="text-md text-gray-400 mt-2 text-center px-10">
-                  Check back later or contact your department for updates.
-                </Text>
-              </View>
-            ) : (
-              events.map((event, index) => (
-                <TouchableOpacity
-                  key={event.id}
-                  onPress={() => handleCardPress(event)}
-                >
-                  <EventCard event={event} index={index} />
-                </TouchableOpacity>
-              ))
-            )}
-          </ScrollView>
-        </View>
+        {/* ---------------- Scrollable Section ---------------- */}
+        <ScrollView
+          className="flex-1"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+        >
+          {/* ---------- Stats ---------- */}
+          <AttendanceStats />
+
+          {/* ---------- Today's Events ---------- */}
+          <Text className="text-xl font-semibold mb-3 text-gray-800">
+            Today's Events
+          </Text>
+
+          {loading ? (
+            <View className="flex items-center justify-center py-14 px-6 rounded-2xl bg-[#F3F4F6] shadow-sm">
+              <ActivityIndicator color="#611FE7" size="large" />
+              <Text className="text-base text-gray-500 text-center mt-3">
+                Fetching your schedule for today...
+              </Text>
+            </View>
+          ) : error ? (
+            <View className="items-center justify-center py-10 space-y-4">
+              <Text className="text-red-500 text-center text-base">
+                ❌ {error}
+              </Text>
+              <TouchableOpacity
+                onPress={() => refetch()}
+                className="bg-purple-600 px-6 py-2 rounded-full shadow-md"
+              >
+                <Text className="text-white font-semibold">🔁 Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : events.length === 0 ? (
+            <View className="flex items-center justify-center py-20">
+              <WithLoveSVG width={100} height={100} />
+              <Text className="text-2xl font-semibold text-gray-600 text-center mt-2">
+                No events today
+              </Text>
+              <Text className="text-sm text-gray-400 text-center mt-1 px-8">
+                Check back later or contact your department for updates.
+              </Text>
+            </View>
+          ) : (
+            events.map((event, index) => (
+              <TouchableOpacity
+                key={event.id}
+                onPress={() => handleCardPress(event)}
+              >
+                <EventCard event={event} index={index} />
+              </TouchableOpacity>
+            ))
+          )}
+        </ScrollView>
+
+        {/* ---------------- QR Scanner Modal ---------------- */}
         {scannerVisible && (
-          // <GestureHandlerRootView className="flex-1">
           <QRScannerModal
             visible={scannerVisible}
             onClose={() => setScannerVisible(false)}
             event={selectedEvent}
           />
-          // </GestureHandlerRootView>
         )}
       </SafeAreaView>
     </>
