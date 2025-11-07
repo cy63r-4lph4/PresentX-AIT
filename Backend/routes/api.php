@@ -28,8 +28,9 @@ Route::middleware('auth:sanctum')->group(
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('events/today', [EventController::class, 'getTodaysEventsForStudent']);
         Route::post('/attendance/mark', [AttendanceController::class, 'markAuthenticated']);
-            Route::get('/student/courses', [CourseController::class, 'studentCourses']);
-                        Route::get('/student/details', [StudentController::class, 'details']);
+        Route::get('/student/courses', [CourseController::class, 'studentCourses']);
+        Route::get('/student/details', [StudentController::class, 'details']);
+        Route::get('/attendance/stats', [AttendanceController::class, 'getAttendanceStats']);
 
 
     }
