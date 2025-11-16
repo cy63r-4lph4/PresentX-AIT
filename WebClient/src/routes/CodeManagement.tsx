@@ -111,7 +111,12 @@ export default function CodeManagement() {
 
     if (eventToken?.token) {
       const expiryDate = new Date(eventToken.expires_at);
-      setQrData(JSON.stringify({ token: eventToken.token }));
+
+      const rawData = JSON.stringify({ token: eventToken.token });
+      const encrypted = CryptoJS.AES.encrypt(rawData, secretKey).toString();
+      const safeEncrypted = encodeURIComponent(encrypted);
+
+      setQrData(safeEncrypted);
       setExpiresAt(expiryDate);
       setSmsCode(eventToken.sms_code || "");
     } else {
